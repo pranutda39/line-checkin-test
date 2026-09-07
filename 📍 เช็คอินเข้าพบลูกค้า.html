@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Sales Check-in Test&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://static.line-scdn.net/liff/edge/2/sdk.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body { font-family: sans-serif; padding: 20px; text-align: center; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>button { background-color: #06C755; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; width: 100%; margin-top: 15px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>input { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;h2&gt;📍 เช็คอินเข้าพบลูกค้า&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;p id="userName"&gt;กำลังโหลดข้อมูลผู้ใช้งาน...&lt;/p&gt;</p>
+<p class="p2"><span class="Apple-converted-space">  </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;input type="text" id="locationName" placeholder="ระบุชื่อลูกค้า / ร้านค้า" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;p id="geoStatus" style="font-size: 12px; color: gray;"&gt;&lt;/p&gt;</p>
+<p class="p2"><span class="Apple-converted-space">  </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button id="btnCheckin" onclick="submitCheckin()" disabled&gt;กำลังดึงพิกัด GPS...&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const GAS_URL = "https://script.google.com/macros/s/AKfycby8x6wv5GrCqSEZ9y7BdxOF30681EeOwnQqMcCdATnRJFZdN7Anx8MDGiJ2iz9zf8nA/exec"; // &lt;-- วาง Web App URL จาก Google Apps Script ที่นี่</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let userProfile = null;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let currentLat = null;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let currentLng = null;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>async function main() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// 1. Initialize LIFF</p>
+<p class="p1"><span class="Apple-converted-space">      </span>await liff.init({ liffId: "YOUR_LIFF_ID" }); // &lt;-- ใส่ LIFF ID ในขั้นตอนที่ 3</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!liff.isLoggedIn()) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>liff.login();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>userProfile = await liff.getProfile();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("userName").innerText = "สวัสดีคุณ: " + userProfile.displayName;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// 2. Get GPS Location</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (navigator.geolocation) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>navigator.geolocation.getCurrentPosition(</p>
+<p class="p1"><span class="Apple-converted-space">          </span>(pos) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>currentLat = pos.coords.latitude;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>currentLng = pos.coords.longitude;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("geoStatus").innerText = `พิกัดปัจจุบัน: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("btnCheckin").disabled = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("btnCheckin").innerText = "ยืนยัน Check-in";</p>
+<p class="p1"><span class="Apple-converted-space">          </span>},</p>
+<p class="p1"><span class="Apple-converted-space">          </span>(err) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("geoStatus").innerText = "ไม่สามารถดึงตำแหน่ง GPS ได้ โปรดเปิด Location";</p>
+<p class="p1"><span class="Apple-converted-space">          </span>},</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{ enableHighAccuracy: true }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>async function submitCheckin() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const locationName = document.getElementById("locationName").value;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!locationName) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>alert("กรุณากรอกชื่อลูกค้าหรือร้านค้าก่อนครับ");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("btnCheckin").disabled = true;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("btnCheckin").innerText = "กำลังบันทึกข้อมูล...";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const payload = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>name: userProfile.displayName,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>locationName: locationName,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>lat: currentLat,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>lng: currentLng</p>
+<p class="p1"><span class="Apple-converted-space">      </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>await fetch(GAS_URL, {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>method: "POST",</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body: JSON.stringify(payload)</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>alert("เช็คอินสำเร็จ!");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>liff.closeWindow(); // ปิดหน้าต่าง LIFF กลับเข้าหน้าแชต LINE</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>main();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
